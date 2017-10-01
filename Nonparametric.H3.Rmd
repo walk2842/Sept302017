@@ -1,0 +1,218 @@
+---
+title: "Nonparametric Homework 3"
+author: "Forrest Walker"
+output:
+  word_document: default
+  html_notebook: default
+---
+## Question 1
+
+### Part A
+
+Compute the observed SST,MST,SSE, and MSE. F=MST/MSE.
+```{r}
+group_1 <- c(2.9736,0.9448,1.6394,0.0389,1.2958)
+group_2 <- c(0.7681,0.8027,0.2156,0.074,1.5076)
+group_3 <- c(4.8249,2.2516,1.5609,2.0452,1.0959)
+total <- c(group_1,group_2,group_3)
+
+E_g1 <- mean(group_1)
+E_g2 <- mean(group_2)
+E_g3 <- mean(group_3)
+E_total <- mean(total)
+obs_SST <- 5*((E_g1-E_total)^2)+(5*((E_g2-E_total)^2))+(5*((E_g3-E_total)^2))
+obs_SST
+MST <- obs_SST/(3-1)
+MST
+```
+
+```{r}
+S2_1 <- var(group_1)
+S2_2 <- var(group_2)
+S2_3 <- var(group_3)
+SSE <-  (4*S2_1)+(4*S2_2)+(4*S2_3)
+MSE <- SSE/(15-3)
+obs.F <- MST/MSE 
+obs.F 
+```
+My observed F statistic is 2.990689.  
+Now do the permutations,
+
+```{r}
+library(gtools)
+A <- 10000
+Q1_matrix <- matrix(NA,A,15)
+Q1_SSTperm <- rep(NA,A)
+Q1_MSTperm <- rep(NA,A)
+Q1_SSEperm <- rep(NA,A)
+Q1_MSEperm <- rep(NA,A)
+Q1_Fperm <- rep(NA,A)
+Q1_count <- 0
+for(i in 1:A) {
+  Q1_matrix[i,] <-permute(total)
+  Q1_SSTperm[i] <- 5*((mean(Q1_matrix[i,1:5])-mean(Q1_matrix[i,]))^2)
+  +(5*((mean(Q1_matrix[i,6:10])-mean(Q1_matrix[i,]))^2))
+  +(5*((mean(Q1_matrix[i,11:15])-mean(Q1_matrix[i,]))^2))
+  Q1_MSTperm[i] <- Q1_SSTperm[i]/2
+  Q1_SSEperm[i] <- 4*(var(Q1_matrix[i,1:5]))+4*(var(Q1_matrix[i,6:10]))+(4*(var(Q1_matrix[i,11:15])))
+  Q1_MSEperm[i] <- Q1_SSEperm[i]/12
+  Q1_Fperm[i] <- Q1_MSTperm[i]/Q1_MSEperm[i]
+  if(Q1_Fperm[i]>=obs.F){
+    Q1_count <- Q1_count+1
+  }
+  }
+
+Q1_count/A
+```
+ My p value is 0.0059.
+ 
+### Part B
+
+```{r}
+rep <- c(rep("g1",5),rep("g2",5),rep("g3",5))
+df <- data.frame(total,rep)
+huh <- aov(total~rep,data=df)
+summary(huh)
+```
+looks like the one way anova has a higher p value and would fail to reject the null, and the permutation test would reject the null.
+
+## Question 2
+
+First the Anova way,
+```{r}
+lb_1700 <- c(574,976,789,805,361,529)
+lb_2300 <- c(791,1146,394,767,1385,1021,2073,803,1263,1016,1101,945,139)
+lb_2800 <- c(865,775,729,1721,1113,820,1613,1404,1201,205,1380,580,1803)
+lb_3200 <- c(998,1049,736,782,730,742,1219,705,1260,611,1350,1657,1143)
+lb_3700 <- c(1154,541,406,1529,1132,767,1224,314,1728)
+Q2_total <- c(lb_1700,lb_2300,lb_2800,lb_3200,lb_3700)
+Q2_groups <- c(rep("lb_1700",6),rep("lb_2300",13),rep("lb_2800",13),rep("lb_3200",13),rep("lb_3700",9))
+Q2_df <- data.frame(Q2_total,Q2_groups)
+Q2_aov <- aov(Q2_total~Q2_groups)
+summary(Q2_aov)
+```
+
+Then the permutation way, finding the observed F value. 
+```{r}
+Q2_obs_SST <- 6*((mean(Q2_total[1:6])-mean(Q2_total))^2)+(13*((mean(Q2_total[7:19])-mean(Q2_total))^2))+(13*((mean(Q2_total[20:32])-mean(Q2_total))^2))+(13*((mean(Q2_total[33:45])-mean(Q2_total))^2))+(9*((mean(Q2_total[46:54])-mean(Q2_total))^2))
+Q2_obs_MST <- Q2_obs_SST/4
+Q2_obs_SSE <- 5*(var(Q2_total[1:6]))+12*(var(Q2_total[7:19]))+(12*(var(Q2_total[19:32])))+(12*(var(Q2_total[32:45])))+(9*(var(Q2_total[45:54])))
+Q2_obs_MSE <- Q2_obs_SSE/(54/5)
+Q2_obs_F <- Q2_obs_MST/Q2_obs_MSE
+Q2_obs_F
+```
+
+
+
+Finding the p value in the permutation way we get,
+```{r}
+A <- 10000
+Q2_matrix <- matrix(NA,A,length(Q2_total))
+Q2_SSTperm <- rep(NA,A)
+Q2_MSTperm <- rep(NA,A)
+Q2_SSEperm <- rep(NA,A)
+Q2_MSEperm <- rep(NA,A)
+Q2_Fperm <- rep(NA,A)
+Q2_count <- 0
+for(i in 1:A) {
+  Q2_matrix[i,] <-permute(Q2_total)
+  Q2_SSTperm[i] <- 6*((mean(Q2_matrix[i,1:6])-mean(Q2_matrix[i,]))^2)+
+    (13*((mean(Q2_matrix[i,7:19])-mean(Q2_matrix[i,]))^2))+
+    (13*((mean(Q2_matrix[i,20:32])-mean(Q2_matrix[i,]))^2))+
+       (13*((mean(Q2_matrix[i,33:45])-mean(Q2_matrix[i,]))^2))+
+          (9*((mean(Q2_matrix[i,46:54])-mean(Q2_matrix[i,]))^2))
+  Q2_MSTperm[i] <- Q2_SSTperm[i]/4
+  Q2_SSEperm[i] <- 5*(var(Q2_matrix[i,1:6]))+12*(var(Q2_matrix[i,7:19]))+(12*(var(Q2_matrix[i,19:32])))+(12*(var(Q2_matrix[i,32:45])))+(9*(var(Q2_matrix[i,45:54])))
+  Q2_MSEperm[i] <- Q2_SSEperm[i]/12
+  Q2_Fperm[i] <- Q2_MSTperm[i]/Q2_MSEperm[i]
+  if(Q2_Fperm[i]>=Q2_obs_F){
+    Q2_count <- Q2_count+1
+  }
+}
+Q2_count <- Q2_count+1
+Q2_count/A
+```
+My P value is 0.5087.
+
+
+
+## Question 3
+
+```{r}
+Q1_rankedt <- rank(total)
+Q1_grp <- c(rep("g1",5),rep("g2",5),rep("g3",5))
+Q3_df <- data.frame(Q1_rankedt,Q1_grp)
+kruskal.test(Q1_rankedt~Q1_grp,data=Q3_df)
+```
+
+## Question 4
+
+```{r}
+a <- 10000
+Q4_ranked <- c(1,2,3,4,5,6)
+Q4_m <- matrix(NA,a,6)
+diff <- rep(NA,a)
+Q4_kw <- rep(NA,a)
+
+for(i in 1:a){
+  Q4_m[i,] <-permute(Q4_ranked)
+  diff[i] <- (2*((mean(Q4_m[i,1:2])-7/2)^2))+
+  (2*((mean(Q4_m[i,3:4])-7/2)^2))+
+  (2*((mean(Q4_m[i,5:6])-7/2)^2))
+  Q4_kw[i] <- diff[i]*(12/42)
+}
+hist(Q4_kw)
+
+```
+
+## Question 5
+
+```{r}
+Q5_score <- c(0,2,1,3,1,1,2,0,3,1,3,4,1,3,4,2,2,1,3,4,2,5,3,4)
+Q5_grp <- c(rep("g1",6),rep("g2",6),rep("g3",6),rep("g4",6))
+Q_5df <- data.frame(Q5_score,Q5_grp)
+kruskal.test(Q5_score~Q5_grp,data=Q_5df)
+```
+
+
+## Question 8
+
+```{r}
+compact <- c(791,846,1024,1007,399,1279,407,1656,1036,1226)
+heavy <- c(423,541,517,1328,471,533,863,786,551,1068)
+light <- c(551,1068,757,1114,920,1809,1238,918,1339,603)
+medium <- c(712,435,298,733,1200,1701,707,790,800,480)
+mpv <- c(1345,1269,1477,758,996,1306,968,943,1026,1564)
+pickup <- c(985,1074,742,985,1342,1184,977,1465,892,1074)
+van <- c(805,2613,903,949,1183,1051,1387,1320,1434,1603)
+Q8_data <-c(compact,heavy,light,medium,mpv,pickup,van)
+Q8_l <- length(Q8_data)
+
+mean.vec <- c(mean(compact),mean(heavy),mean(light),mean(medium),mean(mpv),mean(pickup),mean(van))
+
+mean.diff <- abs(outer(mean.vec,mean.vec,"-"))
+b <- 5000
+Q <- rep(NA,b)
+L <- rep(NA,b)
+
+for(i in 1:b){
+  index <- sample(1:70)
+  T1=Q8_data[index[1:10]]
+  T2=Q8_data[index[11:20]]
+  T3=Q8_data[index[21:30]]
+  T4=Q8_data[index[31:40]]
+  T5=Q8_data[index[41:50]]
+  T6=Q8_data[index[51:60]]
+  T7=Q8_data[index[61:70]]
+  m.vec <- c(mean(T1),mean(T2),mean(T3),mean(T4),mean(T5),mean(T6),mean(T7))
+  m.diff <- abs(outer(m.vec,m.vec,"-"))
+  Q[i] <- max(m.diff)
+  L[i] <- m.diff[1,2]
+}
+quantile(Q,0.9)
+quantile(Q,0.95)
+
+
+
+
+```
