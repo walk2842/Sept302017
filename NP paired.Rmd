@@ -1,0 +1,171 @@
+---
+title: "Nonparametric paired and RB testing"
+author: "Forrest walker"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+## Question 1
+
+For a paired nonparametric test I will first compute the differences in the pairs, and then find every combination if the paired data was random, and find the distrobution of the difference in the permutations. 
+```{r}
+library(gtools)
+Q1_t1 <- c(100,250,50,80)
+Q1_t2 <- c(112,240,58,82)
+
+Q1_obs <- Q1_t1-Q1_t2
+Q1_pos <- (Q1_obs[2])
+Q1_data <- abs(Q1_obs)
+Q1_signs <- c(-1,1)
+Q1_Msigns <- permutations(2,4,Q1_signs,repeats.allowed=T)
+dim(Q1_Msigns)
+y <- unique(Q1_Msigns)
+
+Q1_d <- Q1_Msigns %*%Q1_data
+hist(Q1_d,breaks=20)
+```
+
+
+## Question 2
+
+```{r}
+a <- 10000
+Q2_t1 <- c(2,3,4,4,3,1,3,4,4,5,3,4,2,2,4,3,4,2,2)
+Q2_t2 <- c(2,4,4,4,4,4,3,5,4,4,4,5,4,2,5,5,4,1,2)
+Q2_obs <- Q2_t1-Q2_t2
+Q2_data <- abs(Q2_obs)
+Q2_signs <- c(-1,1)
+Q2_Msigns <- matrix(NA,a,19)
+
+
+for(i in 1:a){
+  Q2_Msigns[i,] <- sample(Q2_signs,19,replace=T)
+}
+dim(Q2_Msigns)
+Q2_d <- Q2_Msigns %*% Q2_data
+Q2_count <- 0
+for(i in 1:a){
+  if(sum(Q2_d[i])<=sum(Q2_obs)){Q2_count <- Q2_count+1}
+}
+Q2_count/a
+
+```
+
+
+## Question 3
+
+```{r}
+library(gtools)
+Q3_t1 <- c(100,250,50,80)
+Q3_t2 <- c(112,240,58,82)
+
+Q3_obs <- Q3_t1-Q3_t2
+Q3_obs
+Q3_abs <- abs(Q3_obs)
+Q3_Robs <- rank(Q3_abs)
+Q3_SRobs <- Q3_Robs*(c(0,1,0,0))
+Q3_SRobs
+Q3_SRpos <- (Q3_obs[2])
+Q3_data <- abs(Q3_obs)
+Q3_signs <- c(0,1)
+Q3_Msigns <- permutations(2,4,Q3_signs,repeats.allowed=T)
+Q3_Msigns
+dim(Q3_Msigns)
+
+Q3_d <- Q3_Msigns %*%Q3_Robs
+Q3_d
+hist(Q3_d,breaks=20)
+```
+
+## Question 4
+Using SRplus
+```{r}
+Q4_before <- c(89,90,87,98,120,85,97)
+Q4_after <- c(76,101,84,86,105,84,93)
+Q4_obs <- Q4_before-Q4_after
+Q4_obs
+Q4_abs <- abs(Q4_obs)
+Q4_Robs <- rank(Q4_abs)
+Q4_SRplus_obs <-sum(Q4_Robs*(c(1,0,1,1,1,1,1)))
+Q4_signs <- c(0,1)
+Q4_Msigns <- permutations(2,7,Q4_signs,repeats.allowed=T)
+dim(Q4_Msigns)
+Q4_d <- Q4_Msigns %*% Q4_Robs
+
+Q4_count <- 0
+for(i in 1:128){
+  if(Q4_d[i]>=Q4_SRplus_obs){
+  Q4_count <- Q4_count+1
+  }
+}
+Q4_count/128
+t.test(Q4_before,Q4_after,paired=T,alt="greater")
+```
+
+## Question 5
+
+```{r}
+Q5_t1 <- c(2,3,4,4,3,1,3,4,4,5,3,4,2,2,4,3,4,2,2)
+Q5_t2 <- c(2,4,4,4,4,4,3,5,4,4,4,5,4,2,5,5,4,1,2)
+Q5_obs <- Q5_t2-Q5_t1
+Q5_obs
+Q5_abs <- abs(Q5_obs)
+Q5_Rabs <- rank(Q5_abs)
+Q5_SRplus_obs <- sum(Q5_Rabs*(c(0,1,0,0,1,1,0,1,0,0,1,1,1,0,1,1,0,0,0)))
+Q5_signs <- c(0,1)
+Q5_Msigns <- matrix(NA,a,19)
+a <- 10000
+for(i in 1:a){
+  Q5_Msigns[i,] <- sample(Q5_signs,19,replace=T)
+}
+dim(Q5_Msigns)
+Q5_d <- Q5_Msigns %*% Q5_Rabs
+Q5_count <- 0
+for(i in 1:a){
+  if(sum(Q5_d[i])>=sum(Q5_SRplus_obs)){Q5_count <- Q5_count+1}
+}
+Q5_count/a
+```
+
+
+## Question 7
+
+```{r}
+Q7_b1 <- c(1.5,1.8,1.9)
+Q7_b2 <- c(2.1,2.0,2.5)
+Q7_b3 <- c(1.9,2,2.5)
+Q7_b4 <- c(2.8,2.7,2.6)
+Q7_b5 <- c(1.4,1.6,2.1)
+Q7_b6 <- c(1.8,2.3,2.4)
+Q7_M <- cbind(Q7_b1,Q7_b2,Q7_b3,Q7_b4,Q7_b5,Q7_b6)
+
+Q7_f<- function(data){
+  for(i in 1:nrow(data)){
+  return(sum((mean(data[i,]))^2))
+  }
+}
+
+for(i in 1:3){
+  Q7_SSXobs <- sum((mean(Q7_M[i,]))^2)
+}
+Q7_count <- 0
+Q7_SSXobs
+a <- 10000
+Q7_d <- 0
+Q7_Dperm <- matrix(NA,3,6)
+for(i in 1:a){
+  for(j in 1:6){
+  Q7_Dperm[,j] <- sample(Q7_M[,j])
+  }
+  Q7_d[i] <- Q7_f(Q7_Dperm)
+  if(Q7_d[i]>=Q7_SSXobs){
+    Q7_count <- Q7_count+1
+  }
+}
+Q7_count/a
+```
+
+
+
+
