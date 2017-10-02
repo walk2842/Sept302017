@@ -1,9 +1,9 @@
 ---
-title: "Nonparametric paired and RB testing"
+title: "Nonparametrics Homework 4"
 author: "Forrest walker"
 output:
-  html_document: default
   html_notebook: default
+  html_document: default
 ---
 
 ## Question 1
@@ -167,5 +167,28 @@ Q7_count/a
 ```
 
 
+## Question 8
+
+```{r}
 
 
+```
+
+
+
+## Question 9
+
+```{r}
+
+
+```
+
+
+
+
+## Question 10
+
+```{r}
+
+
+```
