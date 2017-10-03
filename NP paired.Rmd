@@ -131,6 +131,8 @@ Q5_count/a
 
 ## Question 7
 
+### Part A
+
 ```{r}
 Q7_b1 <- c(1.5,1.8,1.9)
 Q7_b2 <- c(2.1,2.0,2.5)
@@ -145,32 +147,90 @@ Q7_f<- function(data){
   return(sum((mean(data[i,]))^2))
   }
 }
-
+Q7_SSXobs <- c(rep(NA,3))
 for(i in 1:3){
-  Q7_SSXobs <- sum((mean(Q7_M[i,]))^2)
+  Q7_SSXobs[i] <- sum((mean(Q7_M[i,]))^2)
 }
 Q7_count <- 0
 Q7_SSXobs
+
 a <- 10000
-Q7_d <- 0
+Q7_d <- matrix(NA,a,3)
 Q7_Dperm <- matrix(NA,3,6)
+
 for(i in 1:a){
   for(j in 1:6){
   Q7_Dperm[,j] <- sample(Q7_M[,j])
   }
-  Q7_d[i] <- Q7_f(Q7_Dperm)
-  if(Q7_d[i]>=Q7_SSXobs){
+  for(k in 1:3){
+  Q7_d[,k] <- sum((mean(Q7_Dperm[k,]))^2)
+} 
+  if(sum(Q7_d[i,])>=sum(Q7_SSXobs)){
     Q7_count <- Q7_count+1
   }
 }
 Q7_count/a
 ```
 
+### Part B
+
+```{r}
+Q7_b1 <- c(1.5,1.8,1.9)
+Q7_b2 <- c(2.1,2.0,2.5)
+Q7_b3 <- c(1.9,2,2.5)
+Q7_b4 <- c(2.8,2.7,2.6)
+Q7_b5 <- c(1.4,1.6,2.1)
+Q7_b6 <- c(1.8,2.3,2.4)
+Q7_values <- c(Q7_b1,Q7_b2,Q7_b3,Q7_b4,Q7_b5,Q7_b6)
+Q7_blocks <- c(rep("b1",3),rep("b2",3),rep("b3",3),rep("b4",3),rep("b5",3),rep("b6",3))
+Q7_treat <- c(rep("sep.1",6),rep("sep.15",6),rep("sep.30",6))
+Q7_df <- data.frame(Q7_values,Q7_blocks,Q7_treat)
+
+Q7_aov <- aov(Q7_values~Q7_blocks+Q7_treat,data=Q7_df)
+summary(Q7_aov)
+```
+
+
 
 ## Question 8
 
 ```{r}
+Q7_b1 <- c(1.5,1.8,1.9)
+Q7_b2 <- c(2.1,2.0,2.5)
+Q7_b3 <- c(1.9,2,2.5)
+Q7_b4 <- c(2.8,2.7,2.6)
+Q7_b5 <- c(1.4,1.6,2.1)
+Q7_b6 <- c(1.8,2.3,2.4)
+Q8_M <- cbind(Q7_b1,Q7_b2,Q7_b3,Q7_b4,Q7_b5,Q7_b6)
 
+Q8_rmean <- rowMeans(Q8_M)
+Q8_cmean <- colMeans(Q8_M)
+Q8_obs_maxdiff <- max(abs(Q8_rmean- Q8_cmean))
+
+a <- 10000
+Q8_perm <- matrix(NA,3,6)
+Q8_perm_mdiff <- rep(NA,a)
+for(i in 1:a){
+  Q8_perm[,1] <- sample(Q8_M[,1])
+  Q8_perm[,2] <- sample(Q8_M[,2])
+  Q8_perm[,3] <- sample(Q8_M[,3])
+  Q8_perm[,4] <- sample(Q8_M[,4])
+  Q8_perm[,5] <- sample(Q8_M[,5])
+  Q8_perm[,6] <- sample(Q8_M[,6])
+  
+  Q8_perm_rmean <- rowMeans(Q8_perm)
+  Q8_perm_cmean <- colMeans(Q8_perm)
+  Q8_perm_mdiff[i] <- max(abs(Q8_perm_rmean -Q8_perm_cmean))
+}
+
+quantile(Q8_perm_mdiff, .9)
+quantile(Q8_perm_mdiff, .95)
+
+hist(Q8_perm_mdiff,
+     xlab = "max",
+     freq = FALSE,breaks = 25)
+abline(v = quantile(max.diffs, .9), col = 2, lwd = 2)
+abline(v = quantile(max.diffs, .95), col = 4, lwd = 2)
 
 ```
 
@@ -179,7 +239,34 @@ Q7_count/a
 ## Question 9
 
 ```{r}
+Q9_b1 <- c(1.5,1.8,1.9)
+Q9_b2 <- c(2.1,2.0,2.5)
+Q9_b3 <- c(1.9,2,2.5)
+Q9_b4 <- c(2.8,2.7,2.6)
+Q9_b5 <- c(1.4,1.6,2.1)
+Q9_b6 <- c(1.8,2.3,2.4)
+Q9_M <- cbind(Q7_b1,Q7_b2,Q7_b3,Q7_b4,Q7_b5,Q7_b6)
 
+Q9_rank <- apply(Q9_M, 2, rank)
+Q9_rmean <- rowMeans(Q9_rank)
+Q9_obs <- (12*6 / (3*(3+1))) * sum((Q9_rmean - ((3+1)/ 2))^2)
+
+a <- 10000
+Q9_rperm <- matrix(NA,3,6)
+Q9_perm <- rep(NA, a)
+for(i in 1:a){
+  Q9_rperm[,1] <- sample(Q9_rank[,1])
+  Q9_rperm[,2] <- sample(Q9_rank[,2])
+ Q9_rperm[,3] <- sample(Q9_rank[,3])  
+  Q9_rperm[,4] <-sample(Q9_rank[,4])
+  Q9_rperm[,5] <- sample(Q9_rank[,5])
+  Q9_rperm[,6] <- sample(Q9_rank[,6])
+
+  Q9_perm_rmean <- rowMeans(Q9_rperm)
+  Q9_perm[i] <- (12*6 / (3*(3+1))) * sum((Q9_perm_rmean - ((3+1)/ 2))^2)
+}
+Q9_count <- sum(Q9_perm >= Q9_obs)
+Q9_count/a
 
 ```
 
@@ -189,6 +276,34 @@ Q7_count/a
 ## Question 10
 
 ```{r}
+Q10_a <- c(4,5,2,3)
+Q10_b <- c(3,2,5,4)
+Q10_c <- c(1,3,1,2)
+Q10_d <- c(2,1,3,1)
+Q10_e <- c(6,6,4,5)
+Q10_f <- c(5,4,6,6)
 
+Q10_M<- cbind(Q10_a,Q10_b,Q10_c,Q10_d,Q10_e,Q10_f)
+
+Q10_rmean <- rowMeans(Q10_M)
+Q10_obs <- (12*6 / (4*(4+1))) * sum((Q10_rmean - ((4+1)/ 2))^2)
+
+a <- 10000
+Q10_d <- rep(NA,a)
+Q10_perm <- matrix(NA,4,6)
+Q10_perm
+for(i in 1:a){
+  Q10_perm[,1] <- sample(Q10_M[,1])
+  Q10_perm[,2] <- sample(Q10_M[,2])
+  Q10_perm[,3] <- sample(Q10_M[,3])  
+  Q10_perm[,4] <- sample(Q10_M[,4])
+  Q10_perm[,5] <- sample(Q10_M[,5])
+  Q10_perm[,6] <- sample(Q10_M[,6])
+  
+  Q10_perm_rmean<- rowMeans(Q10_perm)
+   Q10_d[i] <- (12*6 / (4*(4+1))) * sum((Q10_perm_rmean - ((4+1)/ 2))^2)
+}
+Q10_count <- sum(Q10_d[i] >= Q10_obs)
+Q10_count/a
 
 ```
